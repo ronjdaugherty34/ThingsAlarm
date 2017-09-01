@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <dimen name="fab_margin">16dp</dimen>
+    <dimen name="activity_horizontal_margin">16dp</dimen>
+    <dimen name="activity_vertical_margin">16dp</dimen>
+
+    <dimen name="item_name_paddingStart">24dp</dimen>
+    <dimen name="item_name_textSize">16sp</dimen>
+
+    <dimen name="item_image_size">48dp</dimen>
+    <dimen name="item_image_margin">8dp</dimen>
+
+    <dimen name="action_padding">12dp</dimen>
+    <dimen name="action_paddingStart">16dp</dimen>
+    <dimen name="action_paddingEnd">16dp</dimen>
+    <dimen name="action_marginEnd">12dp</dimen>
+    <dimen name="action_textSize">14sp</dimen>
+
+    <dimen name="fab_marginEnd">16dp</dimen>
+
+    <dimen name="dialog_title_height">128dp</dimen>
+    <dimen name="dialog_message_padding">24dp</dimen>
+
+
+</resources>

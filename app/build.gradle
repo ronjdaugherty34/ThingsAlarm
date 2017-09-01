@@ -1,0 +1,53 @@
+apply plugin: 'com.android.application'
+apply plugin: 'kotlin-android'
+apply plugin: 'kotlin-android-extensions'
+
+configurations {
+    compile.exclude group: "org.apache.httpcomponents", module: "httpclient"
+    compile.exclude group: 'com.google.code.findbugs'
+    compile.exclude group: 'org.apache.httpcomponents'
+    complie.exclude group: 'org.json'
+}
+
+android {
+    compileSdkVersion 26
+    buildToolsVersion "26.0.1"
+    defaultConfig {
+        applicationId "com.example.ronalddaugherty.thingsalarm"
+        minSdkVersion 24
+        targetSdkVersion 26
+        versionCode 1
+        versionName "1.0"
+        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+    }
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+}
+
+dependencies {
+    implementation fileTree(dir: 'libs', include: ['*.jar'])
+    implementation 'com.android.support.constraint:constraint-layout:1.0.2'
+    testImplementation 'junit:junit:4.12'
+
+    compile 'com.google.apis:google-api-services-vision:v1-rev22-1.22.0'
+    compile 'com.google.api-client:google-api-client-android:1.22.0' exclude module: 'httpclient'
+    compile 'com.google.http-client:google-http-client-gson:1.22.0' exclude module: 'httpclient'
+
+
+    implementation 'com.google.firebase:firebase-database:11.2.0'
+    compile 'com.google.firebase:firebase-core:11.2.0'
+    compileOnly 'com.google.android.things:androidthings:0.5-devpreview'
+    compile "org.jetbrains.kotlin:kotlin-stdlib-jre7:$kotlin_version"
+
+    compile 'com.google.android.things.contrib:driver-pwmspeaker:0.2'
+
+    compile "org.jetbrains.anko:anko-common:$anko_version"
+}
+apply plugin: 'com.google.gms.google-services'
+repositories {
+    mavenCentral()
+}

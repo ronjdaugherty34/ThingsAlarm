@@ -1,0 +1,55 @@
+{
+  "project_info": {
+    "project_number": "893368962938",
+    "firebase_url": "https://thingsalarm.firebaseio.com",
+    "project_id": "thingsalarm",
+    "storage_bucket": "thingsalarm.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:893368962938:android:baa6c6e11c93c0eb",
+        "android_client_info": {
+          "package_name": "com.example.ronalddaugherty.thingsalarm"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "893368962938-nnmiil99jrolsaqnq6db5gmqts3j8krp.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.ronalddaugherty.thingsalarm",
+            "certificate_hash": "539551c1a991d6c2407ac1e2bedb0b17e722ba06"
+          }
+        },
+        {
+          "client_id": "893368962938-d7lfra3faau39d62of30j55kvhpucdak.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAgYn8h039e9-19eaaXbsPE1e-7inTkkqQ"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 2,
+          "other_platform_oauth_client": [
+            {
+              "client_id": "893368962938-d7lfra3faau39d62of30j55kvhpucdak.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
