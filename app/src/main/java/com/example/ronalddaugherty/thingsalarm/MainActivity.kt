@@ -2,43 +2,39 @@ package com.example.ronalddaugherty.thingsalarm
 
 
 import android.app.Activity
-import android.app.NotificationManager
+
 import android.content.ContentValues
+
 import android.media.ImageReader
 import android.os.Bundle
 import android.os.Handler
 import android.os.HandlerThread
-import android.support.constraint.ConstraintSet
-import android.support.constraint.ConstraintLayout;
-import android.transition.AutoTransition
-import android.transition.TransitionManager
+
 import android.util.Base64
 import android.util.Log
+import android.view.KeyEvent
+import android.view.View
+import com.google.android.things.contrib.driver.button.ButtonInputDriver
 import com.google.android.things.contrib.driver.pwmspeaker.Speaker
-
 import com.google.android.things.pio.Gpio
-import com.google.android.things.pio.GpioCallback
 import com.google.android.things.pio.PeripheralManagerService
 import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ServerValue
-import kotlinx.android.synthetic.main.activity_main.*
-import org.jetbrains.anko.toast
-import java.io.File
-
 import java.io.IOException
-import java.nio.ByteBuffer
+
 
 
 class MainActivity : Activity() {
 
 
 
-    private lateinit var gpioPin: Gpio
-    private lateinit var  mSpeaker: Speaker
+   
+
+    //private  var  mSpeaker: Speaker? = null
+    private lateinit var mButtonInputDriver: ButtonInputDriver
     private lateinit var mHandlerThread: HandlerThread
     private lateinit var mHandler: Handler
-    private lateinit var sensorCallBack: SensorCallBack
     private lateinit var mDatabase: FirebaseDatabase
     private lateinit var mCamera: DoorbellCamera
     private lateinit var mCameraHandler: Handler
@@ -46,45 +42,12 @@ class MainActivity : Activity() {
     private lateinit var mCloudHandler: Handler
     private lateinit var mCloudThread: HandlerThread
 
-    private var mConstraintSet1 =ConstraintSet()
-    private var mConstraintSet2 = ConstraintSet()
-    private var mConstraintLayout: ConstraintLayout? = null
-    // private var mOld = true
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-        //val context = this
-
-        mConstraintSet2.clone(mConstraintLayout)
-        mConstraintSet2.centerVertically(R.id.image, 0)
-
-        var changed =false
-
-
-        button1.setOnClickListener{
-            val transition = AutoTransition()
-            transition.duration = 1000
-            TransitionManager.beginDelayedTransition(mConstraintLayout, transition)
-            val constraint = if (changed)
-                mConstraintSet1 else
-                mConstraintSet2
-            constraint.applyTo(mConstraintLayout)
-            changed = !changed
-
-
-            toast("Clicked")}
-
-
-
-
-
         Log.d(TAG, "MainActivity created.")
-
-
-
-
 
         mDatabase = FirebaseDatabase.getInstance()
 
@@ -96,64 +59,59 @@ class MainActivity : Activity() {
         mCloudThread.start()
         mCloudHandler = Handler(mCloudThread.looper)
 
+
+       // mHandlerThread = HandlerThread("pwm-playback")
+       // mHandlerThread.start()
+       // mHandler = Handler(mHandlerThread.looper)
+       // mHandler.post(mPlaybackRunnable)
+
+
         mCamera = DoorbellCamera.instance
         mCamera.initializeCamera(this, mCameraHandler, mOnImageAvailableListener)
 
 
         val service = PeripheralManagerService()
 
-        //find the pwnPin for speaker
+
+
+
+        // Init button
+
+            try {
+                mButtonInputDriver = ButtonInputDriver(BoardDefaults.gpioForButton,
+                        com.google.android.things.contrib.driver.button.Button.LogicState.PRESSED_WHEN_LOW,
+                        KeyEvent.KEYCODE_SPACE)
+                mButtonInputDriver.register()
+
+            }catch (e: IOException) {
+                Log.e(TAG, "button driver error", e)
+
+            }
+
+
+
+
+        /*//find the pwnPin for speaker
             try {
                 mSpeaker = Speaker(BoardDefaults.pwmPin)
-                mSpeaker.stop()
+                mSpeaker!!.stop()
 
 
             } catch (e: IOException) {
                 Log.e(ContentValues.TAG, "Error initializing speaker")
                 return
             }
-
-        mHandlerThread = HandlerThread("pwm-playback")
-        mHandlerThread.start()
-        mHandler = Handler(mHandlerThread.looper)
-        mHandler.post(mPlaybackRunnable)
+        */
 
 
-
-
-            try {
-                gpioPin = service.openGpio(BoardDefaults.pirPin)
-                gpioPin.setDirection(Gpio.DIRECTION_IN)
-                gpioPin.setActiveType(Gpio.ACTIVE_HIGH)
-
-                val status = gpioPin.value
-                Log.d(TAG, "Status [$status]")
-
-                sensorCallBack = SensorCallBack()
-                gpioPin.setEdgeTriggerType(Gpio.EDGE_RISING)
-                gpioPin.registerGpioCallback(sensorCallBack)
-
-                (Thread(Runnable {
-                    try {
-                        val status = gpioPin.value
-                        Log.d(TAG, "Sensor status [" + status + "]")
-                        if (status) {
-                            Log.i(TAG, "Motion detected...")
-                            mCamera.takePicture()
-                            Log.i(TAG, "Pic Taken bastard!!")
-
-                        }
-                        Thread.sleep(5000)
-                    } catch (e: Exception) {
-                        e.printStackTrace()
-                    }
-                })).start()
-
-
-            } catch (ioe: IOException) {
-
-            }
     }
+
+    fun ringBell (view: View) {
+        mCamera.takePicture()
+       //l mHandler.post(mPlaybackRunnable)
+
+    }
+
 
 
     override fun onDestroy() {
@@ -161,40 +119,43 @@ class MainActivity : Activity() {
         mCamera.shutDown()
         mCameraThread.quitSafely()
         mCloudThread.quitSafely()
+        mButtonInputDriver.unregister()
 
         Log.d(TAG, "onDestroy")
-
-        gpioPin.unregisterGpioCallback(sensorCallBack)
-        try {
-            gpioPin.close()
-
-        } catch (e: Exception) {
-        }
+        
 
 
-        try {
-            mSpeaker.stop()
-            mSpeaker.close()
+
+      /*  try {
+            mSpeaker!!.stop()
+            mSpeaker!!.close()
         } catch (e: IOException) {
             Log.e(ContentValues.TAG, "Error closing speaker")
+        } */
+
+        try {
+            mButtonInputDriver.close()
+        }catch (e: IOException) {
+            Log.e(TAG, "Error closing Button driver")
         }
     }
+    
 
-    private val mPlaybackRunnable = object : Runnable {
+   /* private val mPlaybackRunnable = object : Runnable {
         private var index = 0
 
         override fun run() {
 
             try {
                 if (index == MusicNotes.DRAMATIC_THEME.size) {
-                    // reached the end
-                    mSpeaker.stop()
+                    //reached the end
+                    mSpeaker!!.stop()
                 } else {
                     val note = MusicNotes.DRAMATIC_THEME[index++]
                     if (note > 0) {
-                        mSpeaker.play(note)
+                        mSpeaker!!.play(note)
                     } else {
-                        mSpeaker.stop()
+                       mSpeaker!!.stop()
                     }
                     mHandler.postDelayed(this, PLAYBACK_NOTE_DELAY)
                 }
@@ -203,7 +164,7 @@ class MainActivity : Activity() {
             }
 
         }
-    }
+    } */
 
     private val mOnImageAvailableListener = ImageReader.OnImageAvailableListener { imageReader ->
         val image = imageReader.acquireLatestImage()
@@ -252,40 +213,42 @@ class MainActivity : Activity() {
         Log.d(TAG, "whats going on")
     }
 
+    override fun onKeyUp(keyCode: Int, event: KeyEvent): Boolean {
+        // Handle key events from captouch inputs
+        if (keyCode == KeyEvent.KEYCODE_SPACE) {
 
-
-
-    private inner class SensorCallBack : GpioCallback() {
-
-        override fun onGpioEdge(gpio: Gpio?): Boolean {
-            try {
-                val callBackState = gpio!!.value
-                Log.d(TAG, "Callback state [$callBackState]")
-                mCamera.takePicture()
-                mHandler.post(mPlaybackRunnable)
-
-                com.example.ronalddaugherty.thingsalarm.NotificationManager
-                        .instance.sendNotification( "Alarm!",
-                "AAAA0ADwj3o:APA91bHXU7NLVABqSlXk1HIwqR4o9jPdtPZBfAHZw66WAeruyjjnp8RjlGXVCK1sg1mfQLX5-oAjA-XtvWCbShSWW9AkzrWMD_ufNZzdE89Vu1OMbNf03oJvqMgXkj1A9kbvDDephf7O")
-
-            } catch (ioe: IOException) {
-                ioe.printStackTrace()
-            }
 
             return true
         }
+            return super.onKeyUp(keyCode, event)
 
-        override fun onGpioError(gpio: Gpio?, error: Int) {
-            super.onGpioError(gpio, error)
-        }
     }
+
+    override fun onKeyDown(keyCode: Int, event: KeyEvent?): Boolean {
+        if (keyCode == KeyEvent.KEYCODE_SPACE) {
+            mCamera.takePicture()
+            //mHandler.post(mPlaybackRunnable)
+
+            return true
+        }
+        return super.onKeyDown(keyCode, event)
+    }
+
+
 
     companion object {
 
         private val TAG = MainActivity::class.java.simpleName
+
         const val PLAYBACK_NOTE_DELAY = 80L
     }
 }
+
+
+
+
+
+
 
 
 

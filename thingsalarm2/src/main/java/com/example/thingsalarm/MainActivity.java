@@ -2,30 +2,22 @@ package com.example.thingsalarm;
 
 import android.content.Context;
 import android.content.Intent;
-import android.support.constraint.solver.widgets.Snapshot;
-import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.DividerItemDecoration;
-import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.StaggeredGridLayoutManager;
-import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.Button;
 
-import com.google.firebase.FirebaseApp;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
-import com.google.firebase.iid.FirebaseInstanceId;
-import com.google.firebase.messaging.FirebaseMessaging;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -37,12 +29,12 @@ public class MainActivity extends AppCompatActivity {
 
     private DatabaseReference mDatabaseRef;
 
-    private List<MotionEntry> motionEntryList = new ArrayList<>();
+    private List<DoorbellEntry> doorbellEntryList = new ArrayList<>();
 
     private StaggeredGridLayoutManager mStaggeredLayoutManager;
 
     private RecyclerView mRecyclerView;
-    private MotionEntryAdapter mAdapter;
+    private DoorbellEntryAdapter mAdapter;
 
    // private Toolbar toolbar;
     private Menu menu;
@@ -70,17 +62,17 @@ public class MainActivity extends AppCompatActivity {
 
         mDatabaseRef = FirebaseDatabase.getInstance().getReference().child("logs");
 
-        ItemClickSupport itemClickSupport = ItemClickSupport.addTo(mRecyclerView)
+        ItemClickSupport itemClickSupport = ItemClickSupport.Companion.addTo(mRecyclerView)
                 .setOnItemClickListener(new ItemClickSupport.OnItemClickListener() {
             @Override
             public void onItemClicked(RecyclerView recyclerView, int position, View v) {
                 Log.d(DEBUG_TAG, "List CLicked");
-                final ArrayList<MotionEntry> motionEntryArrayList = new ArrayList<>();
+                final ArrayList<DoorbellEntry> doorbellEntryArrayList = new ArrayList<>();
                 mDatabaseRef .addListenerForSingleValueEvent(new ValueEventListener() {
                     @Override
                     public void onDataChange(DataSnapshot dataSnapshot) {
                         for (DataSnapshot snapshot: dataSnapshot.getChildren()) {
-                            motionEntryArrayList.add (snapshot.getValue(MotionEntry.class));
+                            doorbellEntryArrayList.add (snapshot.getValue(DoorbellEntry.class));
                         }
 
                     }
@@ -125,6 +117,8 @@ public class MainActivity extends AppCompatActivity {
     }
     */
 
+
+
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
@@ -163,20 +157,32 @@ public class MainActivity extends AppCompatActivity {
     public void onStart() {
         super.onStart();
 
-        mAdapter = new MotionEntryAdapter(this,mDatabaseRef);
+        mAdapter = new DoorbellEntryAdapter(this,mDatabaseRef);
         mRecyclerView.setAdapter(mAdapter);
 
-        ValueEventListener postListener = new ValueEventListener() {
+
+        mAdapter.registerAdapterDataObserver(new RecyclerView.AdapterDataObserver() {
+            @Override
+            public void onItemRangeChanged(int positionStart, int itemCount) {
+                mRecyclerView.smoothScrollToPosition(mAdapter.getItemCount());
+
+            }
+        });
+
+
+
+
+        /* ValueEventListener postListener = new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
-                MotionEntry motionEntry = dataSnapshot.getValue(MotionEntry.class);
+                DoorbellEntry doorbellEntry = dataSnapshot.getValue(DoorbellEntry.class);
             }
 
             @Override
             public void onCancelled(DatabaseError databaseError) {
 
             }
-        };
+        }; */
 
 
 

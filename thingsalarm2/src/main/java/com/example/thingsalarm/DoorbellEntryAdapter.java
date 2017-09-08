@@ -17,42 +17,43 @@ import com.firebase.ui.database.FirebaseRecyclerAdapter;
 import com.google.firebase.database.DatabaseReference;
 
 import java.util.ArrayList;
-import java.util.List;
 
+/**
+ * Created by ronalddaugherty on 9/5/17.
+ */
 
+public class DoorbellEntryAdapter extends FirebaseRecyclerAdapter<DoorbellEntry, DoorbellEntryAdapter.DoorbellEntryViewHolder> {
 
-class MotionEntryAdapter extends FirebaseRecyclerAdapter<MotionEntry, MotionEntryAdapter.MotionEntryViewHolder> {
-
-
-    public static class MotionEntryViewHolder extends RecyclerView.ViewHolder {
-
+    public static class DoorbellEntryViewHolder extends RecyclerView.ViewHolder{
         public final ImageView image;
         public final TextView time;
         public final TextView metadata;
 
-        public MotionEntryViewHolder(View itemView) {
+        public DoorbellEntryViewHolder(View itemView) {
             super(itemView);
-            this.image = itemView.findViewById(R.id.imageView1);
-            this.time = itemView.findViewById(R.id.textView1);
-            this.metadata = itemView.findViewById(R.id.textView2);
 
+
+            this.image = (ImageView) itemView.findViewById(R.id.imageView1);
+            this.time = (TextView) itemView.findViewById(R.id.textView1);
+            this.metadata = (TextView) itemView.findViewById(R.id.textView2);
         }
+
     }
+
+
+
 
 
     private Context mApplicationContext;
 
-    public MotionEntryAdapter(Context context, DatabaseReference ref) {
-        super(MotionEntry.class, R.layout.motion_entry, MotionEntryViewHolder.class, ref);
+    public DoorbellEntryAdapter(Context context, DatabaseReference ref) {
+        super(DoorbellEntry.class, R.layout.motion_entry, DoorbellEntryViewHolder.class, ref);
 
         mApplicationContext = context.getApplicationContext();
     }
 
-
     @Override
-    protected void populateViewHolder(MotionEntryViewHolder viewHolder, MotionEntry model, int position) {
-
-
+    protected void populateViewHolder(DoorbellEntryViewHolder viewHolder, DoorbellEntry model, int position) {
         // Display the timestamp
         CharSequence prettyTime = DateUtils.getRelativeDateTimeString(mApplicationContext,
                 model.getTimestamp(), DateUtils.SECOND_IN_MILLIS, DateUtils.WEEK_IN_MILLIS, 0);
@@ -71,6 +72,9 @@ class MotionEntryAdapter extends FirebaseRecyclerAdapter<MotionEntry, MotionEntr
                 viewHolder.image.setImageDrawable(placeholder);
             }
         }
+
+
+
         // Display the metadata
         if (model.getAnnotations() != null) {
             ArrayList<String> keywords = new ArrayList<>(model.getAnnotations().keySet());
@@ -80,7 +84,12 @@ class MotionEntryAdapter extends FirebaseRecyclerAdapter<MotionEntry, MotionEntr
         } else {
             viewHolder.metadata.setText("no annotations yet");
         }
+    }
+    public void removeItem () {
+
 
 
     }
+
+
 }

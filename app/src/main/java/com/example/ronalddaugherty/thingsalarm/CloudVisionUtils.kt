@@ -68,11 +68,13 @@ object CloudVisionUtils {
         // Convert response into a readable collection of annotations
         val annotations = HashMap<String, Float>()
         val labels = response.responses[0].labelAnnotations
-        if (labels != null) {
+
+        labels?.let {
             for (label in labels) {
                 annotations.put(label.description, label.score)
             }
         }
+
 
         Log.d(TAG, "Cloud Vision request completed:" + annotations)
         return annotations

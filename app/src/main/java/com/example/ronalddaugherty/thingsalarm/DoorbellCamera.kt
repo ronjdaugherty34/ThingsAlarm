@@ -10,23 +10,40 @@ import android.hardware.camera2.CameraManager
 import android.hardware.camera2.CaptureRequest
 import android.hardware.camera2.CaptureResult
 import android.hardware.camera2.TotalCaptureResult
+import android.hardware.camera2.params.StreamConfigurationMap
 import android.media.ImageReader
 import android.os.Handler
 import android.util.Log
+import android.util.Size
+
+
 import android.content.Context.CAMERA_SERVICE
 import android.view.Surface
+import java.util.Collections
 
+/**
+ * Created by ronalddaugherty on 9/3/17.
+ */
 
-class DoorbellCamera   {
+class DoorbellCamera// Lazy-loaded singleton, so only one instance of the camera is created.
+private constructor() {
 
-    private lateinit var mCameraDevice: CameraDevice
-    private lateinit var mCaptureSession: CameraCaptureSession
-    private lateinit var mImageReader: ImageReader
+    private var mCameraDevice: CameraDevice? = null
+
+    private var mCaptureSession: CameraCaptureSession? = null
+
+    /**
+     * An [ImageReader] that handles still image capture.
+     */
+    private var mImageReader: ImageReader? = null
 
     private object InstanceHolder {
          val mCamera = DoorbellCamera()
     }
 
+    /**
+     * Initialize the camera device
+     */
     fun initializeCamera(context: Context,
                          backgroundHandler: Handler,
                          imageAvailableListener: ImageReader.OnImageAvailableListener) {
@@ -39,7 +56,7 @@ class DoorbellCamera   {
             Log.d(TAG, "Cam access exception getting IDs", e)
         }
 
-        if (camIds.isEmpty()) {
+        if (camIds.size < 1) {
             Log.d(TAG, "No cameras found")
             return
         }
@@ -49,7 +66,7 @@ class DoorbellCamera   {
         // Initialize the image processor
         mImageReader = ImageReader.newInstance(IMAGE_WIDTH, IMAGE_HEIGHT,
                 ImageFormat.JPEG, MAX_IMAGES)
-        mImageReader.setOnImageAvailableListener(
+        mImageReader!!.setOnImageAvailableListener(
                 imageAvailableListener, backgroundHandler)
 
         // Open the camera resource
@@ -83,7 +100,7 @@ class DoorbellCamera   {
 
         override fun onClosed(cameraDevice: CameraDevice) {
             Log.d(TAG, "Closed camera, releasing")
-            //mCameraDevice = null
+            mCameraDevice = null
         }
     }
 
@@ -91,14 +108,15 @@ class DoorbellCamera   {
      * Begin a still image capture
      */
     fun takePicture() {
-        Log.w(TAG, "Cannot capture image. Camera not initialized.")
-
-
+        if (mCameraDevice == null) {
+            Log.w(TAG, "Cannot capture image. Camera not initialized.")
+            return
+        }
 
         // Here, we create a CameraCaptureSession for capturing still images.
         try {
-            mCameraDevice.createCaptureSession(
-                    listOf<Surface>(mImageReader.surface),
+            mCameraDevice!!.createCaptureSession(
+                    listOf<Surface>(mImageReader!!.surface),
                     mSessionCallback, null)
         } catch (cae: CameraAccessException) {
             Log.d(TAG, "access exception while preparing pic", cae)
@@ -112,6 +130,9 @@ class DoorbellCamera   {
     private val mSessionCallback = object : CameraCaptureSession.StateCallback() {
         override fun onConfigured(cameraCaptureSession: CameraCaptureSession) {
             // The camera is already closed
+            if (mCameraDevice == null) {
+                return
+            }
 
             // When the session is ready, we start capture.
             mCaptureSession = cameraCaptureSession
@@ -128,11 +149,11 @@ class DoorbellCamera   {
      */
     private fun triggerImageCapture() {
         try {
-            val captureBuilder = mCameraDevice.createCaptureRequest(CameraDevice.TEMPLATE_STILL_CAPTURE)
-            captureBuilder.addTarget(mImageReader.surface)
+            val captureBuilder = mCameraDevice!!.createCaptureRequest(CameraDevice.TEMPLATE_STILL_CAPTURE)
+            captureBuilder.addTarget(mImageReader!!.surface)
             captureBuilder.set(CaptureRequest.CONTROL_AE_MODE, CaptureRequest.CONTROL_AE_MODE_ON)
             Log.d(TAG, "Session initialized.")
-            mCaptureSession.capture(captureBuilder.build(), mCaptureCallback, null)
+            mCaptureSession!!.capture(captureBuilder.build(), mCaptureCallback, null)
         } catch (cae: CameraAccessException) {
             Log.d(TAG, "camera capture exception")
         }
@@ -153,11 +174,11 @@ class DoorbellCamera   {
         override fun onCaptureCompleted(session: CameraCaptureSession,
                                         request: CaptureRequest,
                                         result: TotalCaptureResult) {
-
+            if (session != null) {
                 session.close()
-                //mCaptureSession = null
+                mCaptureSession = null
                 Log.d(TAG, "CaptureSession closed")
-
+            }
         }
     }
 
@@ -166,8 +187,9 @@ class DoorbellCamera   {
      * Close the camera resources
      */
     fun shutDown() {
-        mCameraDevice.close()
-
+        if (mCameraDevice != null) {
+            mCameraDevice!!.close()
+        }
     }
 
     companion object {
@@ -196,7 +218,7 @@ class DoorbellCamera   {
                 Log.d(TAG, "Cam access exception getting IDs")
             }
 
-            if (camIds.isEmpty()) {
+            if (camIds.size < 1) {
                 Log.d(TAG, "No cameras found")
             }
             val id = camIds[0]
@@ -221,6 +243,5 @@ class DoorbellCamera   {
 
         }
     }
-
 
 }

@@ -2,6 +2,7 @@ apply plugin: 'com.android.application'
 apply plugin: 'kotlin-android'
 apply plugin: 'kotlin-android-extensions'
 
+
 configurations {
     compile.exclude group: "org.apache.httpcomponents", module: "httpclient"
     compile.exclude group: 'com.google.code.findbugs'
@@ -40,14 +41,16 @@ dependencies {
 
     implementation 'com.google.firebase:firebase-database:11.2.0'
     compile 'com.google.firebase:firebase-core:11.2.0'
+
     compileOnly 'com.google.android.things:androidthings:0.5-devpreview'
+
     compile "org.jetbrains.kotlin:kotlin-stdlib-jre7:$kotlin_version"
 
     compile 'com.google.android.things.contrib:driver-pwmspeaker:0.2'
+    compile 'com.google.android.things.contrib:driver-button:0.3'
+    implementation 'com.google.android.things.contrib:driver-cap12xx:0.3'
+    compile 'com.android.support:support-annotations:26.0.2'
 
     compile "org.jetbrains.anko:anko-common:$anko_version"
 }
 apply plugin: 'com.google.gms.google-services'
-repositories {
-    mavenCentral()
-}
